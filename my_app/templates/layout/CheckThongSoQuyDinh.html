@@ -1,0 +1,10 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}Bảo mật cao!{% endblock %}
+
+{% block content %}
+<form method="POST" action="/admin/thongsoquydinh">
+  <input type="password" name="password" placeholder="Enter password" required>
+  <button type="submit">Submit</button>
+</form>
+{% endblock %}
