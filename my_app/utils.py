@@ -7,7 +7,7 @@ from sqlalchemy import exists
 from sqlalchemy import func
 
 from my_app import db, app
-from my_app.models import ChiTietThue, Phong, LoaiPhong, TaiKhoanKhach, HoaDon, Khach, LoaiKhach, SDT, ThongSoQuyDinh
+from my_app.models import ChiTietThue, Phong, LoaiPhong, TaiKhoanKhach, HoaDon, Khach, LoaiKhach, ThongSoQuyDinh
 
 
 def get_tongtien(from_date=None, to_date=None):
@@ -61,7 +61,7 @@ def get_songaychuatt(ngaythue, ngaytra):
 
 def get_laphoadon(mahopdong=None):
     hopdong = db.session.query(Khach.MaLoaiKhach, Khach.DiaChi, ChiTietThue.MaHopDong, ChiTietThue.MaPhong,
-                               ChiTietThue.SoNgayODuKien, LoaiPhong.DonGia).filter(
+                               ChiTietThue.SoNgayODuKien, LoaiPhong.DonGia, ChiTietThue.SoLuongKhach).filter(
         ~exists().where(ChiTietThue.MaHopDong == HoaDon.MaHopDong))
     if mahopdong:
         hopdong = hopdong.filter(ChiTietThue.MaHopDong == mahopdong)
@@ -176,10 +176,6 @@ def get_PhongTrong(kw=None, MaLoaiPhong=None, page=None):
     return phong.all()
 
 
-def get_BangSDT(maKhach):
-    bangSDT = db.session.query(Khach).join(SDT, Khach.SDT).join(LoaiKhach).filter(Khach.MaKhach == maKhach).all()
-    return bangSDT
-
 
 def kiemTraPhongTrong(maPhong):
     phong = db.session.query(Phong).get(maPhong)
@@ -211,13 +207,26 @@ def add_HoaDon_ChiTietThue(cart):
                 maPhong = p["MaPhong"]
                 ngayBatDau = p["NgayBatDau"]
                 soNgayODuKien = p["quantity"]
+                SoLuongKhach = p['SoLuongKhach']
                 chiTietThue = ChiTietThue(MaPhong=maPhong, MaKhach=user.MaKhach, NgayBatDau=ngayBatDau,
-                                          SoNgayODuKien=soNgayODuKien)
+                                          SoNgayODuKien=soNgayODuKien, SoLuongKhach=SoLuongKhach)
                 db.session.add(chiTietThue)
 
                 ngayTraPhong = datetime.date(*[int(i) for i in str(ngayBatDau).split("-")]) + datetime.timedelta(
                     days=soNgayODuKien)
-                thanhTien = p["DonGia"] * p["quantity"]
+
+                thanhTien = 0
+
+                loaiKhach = Khach.query.join(LoaiKhach).filter(
+                    Khach.MaKhach == session.get('khach')['khach']['id']).all()
+                if loaiKhach:
+                    if loaiKhach[0].LoaiKhach.LoaiKhach == 'NuocNgoai':
+                        thanhTien += p["DonGia"] * p["quantity"] * ThongSoQuyDinh.TyLePhuThu
+                    else:
+                        thanhTien += p["DonGia"] * p["quantity"]
+                if SoLuongKhach > 3:
+                    thanhTien += p["DonGia"] * p["quantity"] * ThongSoQuyDinh.TyLePhuThu
+
                 hoaDon = HoaDon(ChiTietThue=chiTietThue, NgayTraPhong=ngayTraPhong, ThanhTien=thanhTien)
                 db.session.add(hoaDon)
                 if not update_TrangThaiPhong(maPhong):
@@ -252,34 +261,60 @@ def cart_stats(cart):
         for p in cart.values():
             if session.get('khach'):
                 loaiKhach = Khach.query.join(LoaiKhach).filter(Khach.MaKhach == session.get('khach')['khach']['id']).all()
+                TyLe = ThongSoQuyDinh.query.filter(ThongSoQuyDinh.id == 1).value(ThongSoQuyDinh.TyLePhuThu)
                 if loaiKhach:
                     if loaiKhach[0].LoaiKhach.LoaiKhach == 'NuocNgoai':
-                        total_amount += p["DonGia"] * p["quantity"] * ThongSoQuyDinh.query.all()[0].GiaTri
+                        total_amount = total_amount + (p["DonGia"] * p["quantity"] * TyLe)
                     else:
-                        total_amount += p["DonGia"] * p["quantity"]
-            else:
-                total_amount += p["DonGia"] * p["quantity"]
+                        total_amount = total_amount + (p["DonGia"] * p["quantity"])
 
-            total_quantity += 1
+                if p['SoLuongKhach'] is not None and p['SoLuongKhach'] > 2:
+                    total_amount += p["DonGia"] * p["quantity"] * TyLe
+            else:
+                total_amount = total_amount + (p["DonGia"] * p["quantity"])
+
+            total_quantity = total_quantity + 1
 
     return {
         "total_quantity": total_quantity,
-        "total_amount": total_amount /3
+        "total_amount": total_amount / 3
     }
 
 
-def add_Khach(username=None, password=None, maLoaiKhach=None, CMND=None, diaChi=None, ngaySinh=None, soDT=None,
-              loaiSDT=None):
-    sdt = SDT(LoaiSDT=loaiSDT, SDT=soDT)
-    db.session.add(sdt)
+def add_Khach(username=None, password=None, maLoaiKhach=None, CMND=None, diaChi=None, ngaySinh=None, SDT=None):
 
-    khach = Khach(MaLoaiKhach=maLoaiKhach, CMND=CMND, DiaChi=diaChi, NgaySinh=ngaySinh)
-    khach.SDT.append(sdt)
+    khach = Khach(MaLoaiKhach=maLoaiKhach, CMND=CMND, DiaChi=diaChi, NgaySinh=ngaySinh, SDT=SDT)
+
     db.session.add(khach)
 
     password = str(hashlib.md5(password.encode("utf-8")).digest())
     taiKhoanKhach = TaiKhoanKhach(Khach_TaiKhoan=khach, username=username, password=password)
     db.session.add(taiKhoanKhach)
+
+    try:
+        db.session.commit()
+        return True
+    except:
+        return False
+
+def get_khach(maKhach):
+    khach = db.session.query(Khach).filter(Khach.MaKhach == maKhach).all()
+    return khach
+
+def update_Khach(maKhach, username=None, password=None, maLoaiKhach=None, CMND=None, diaChi=None, ngaySinh=None,
+                 SDT=None):
+    khach = db.session.query(Khach).filter(Khach.MaKhach == maKhach).all()[0]
+    khach.MaLoaiKhach = maLoaiKhach
+    khach.CMND = CMND
+    khach.DiaChi = diaChi
+    khach.NgaySinh = ngaySinh
+    khach.SDT = SDT
+
+    taiKhoanKhach = db.session.query(TaiKhoanKhach).get(maKhach)
+    taiKhoanKhach.username = username
+    if password != session.get('khach')['khach']['password']:
+        password = str(hashlib.md5(password.encode("utf-8")).digest())
+    taiKhoanKhach.password = password
 
     try:
         db.session.commit()
@@ -308,4 +343,4 @@ if __name__ == '__main__':
         new_row.append(soNgayO(row[0].NgayBatDau))
         new_row.append(price(row[0].NgayBatDau, row[2].DonGia))
         new_list.append(tuple(new_row))
-        print(row[0].MaHopDong)
+    #     print(row[0].MaHopDong)

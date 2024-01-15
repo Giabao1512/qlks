@@ -5,9 +5,6 @@ from datetime import datetime
 from sqlalchemy import Date
 from my_app import db
 
-BangSDTNhanVien = db.Table('BangSDTNhanVien',
-                           Column('emp_id', Integer, ForeignKey('tai_khoan_nhan_vien.emp_id'), primary_key=True),
-                           Column('id_SDT', Integer, ForeignKey('SDT.id'), primary_key=True))
 
 # class BaseModel(db.Model):
 #     __abstract__ = True
@@ -16,8 +13,6 @@ BangSDTNhanVien = db.Table('BangSDTNhanVien',
 class TaiKhoanNhanVien(db.Model, UserMixin):
     emp_id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False)
-    SDT = relationship('SDT', secondary='BangSDTNhanVien', lazy='subquery',
-                       backref=backref('taikhoannhanvien', lazy=True))
     username = Column(String(100), nullable=False, unique=True)
     password = Column(String(100), nullable=False)
     active = Column(Boolean, default=True)
@@ -86,21 +81,16 @@ class LoaiKhach(db.Model):
     khach = relationship('Khach', backref='LoaiKhach', lazy=True)
 
 
-BangSDT = db.Table('BangSDT', Column('MaKhach', Integer, ForeignKey('khach.MaKhach'), primary_key=True),
-                   Column('id_SDT', Integer, ForeignKey('SDT.id'), primary_key=True))
-
-
 class Khach(db.Model):
     MaKhach = Column(Integer, primary_key=True, autoincrement=True)
     MaLoaiKhach = Column(Integer, ForeignKey(LoaiKhach.MaLoaiKhach), nullable=False)
     CMND = Column(String(12), nullable=False)
     DiaChi = Column(String(255), nullable=False)
     NgaySinh = Column(Date, nullable=True)
-
-    SDT = relationship('SDT', secondary='BangSDT', lazy='subquery', backref=backref('Khach', lazy=True))
+    SDT = Column(Integer, nullable=False)
     chiTietThue = relationship('ChiTietThue', backref='Khach_ChiTietThue', lazy=True)
     danhGia = relationship('DanhGiaCuaKhach', backref='Khach_danhGia', lazy=True)
-    taiKhoan = relationship('TaiKhoanKhach', backref='Khach_TaiKhoan', lazy=True, )
+    taiKhoan = relationship('TaiKhoanKhach', backref='Khach_TaiKhoan', lazy=True)
 
     def __str__(self):
         return str(self.MaKhach)
@@ -123,11 +113,6 @@ class TaiKhoanKhach(db.Model):
     def get_urole(self):
         return 'Khach'
 
-
-class SDT(db.Model):
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    LoaiSDT = Column(String(50), nullable=False)
-    SDT = Column(String(11), nullable=False)
 
 
 class ChiTietThue(db.Model):

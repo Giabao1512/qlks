@@ -20,25 +20,33 @@ function addToCart(MaPhong, MaLoaiPhong){
     })
 }
 
-function updateCartItem(MaPhong, NgayBatDau, quantity){
+function updateCartItem(MaPhong, NgayBatDau, quantity, SoLuongKhach){
     fetch("/api/update-cart-item",{
         method: "put",
-        body:JSON.stringify({
+        body:JSON.stringify
+        (
+        {
             "MaPhong": MaPhong,
             "NgayBatDau": String(NgayBatDau),
-            "quantity": parseInt(quantity)
-        }),
-        headers: {
+            "quantity": parseInt(quantity),
+            "SoLuongKhach": parseInt(SoLuongKhach)
+        }
+        ),
+        headers:
+        {
             "Content-Type":"application/json"
         }
     }).then(function(res){
         return res.json()
-    }).then(function(data){
-        if(data.error_code == 200){
+    }).then(function(data)
+    {
+        if(data.error_code == 200)
+        {
             let d = data.cart_stats
             let quantity = document.getElementById("cart-quantity")
             let amount = document.getElementById("cart-amount")
-            if (quantity !== null && amount !== null){
+            if (quantity !== null && amount !== null)
+            {
                 let d = data.cart_stats
                 quantity.innerText = d.total_quantity
                 amount.innerText = d.total_amount
@@ -69,7 +77,7 @@ fetch("/api/delete-cart-item/"+MaPhong,{
                 if(counter !== null)
                     counter.innerText = d.total_quantity
 
-                //location.reload()
+                location.reload()
                 let row = document.getElementById("Phong" + MaPhong)
                 row.style.display = "none"
             }

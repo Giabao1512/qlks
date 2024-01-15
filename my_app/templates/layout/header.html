@@ -20,7 +20,7 @@
                 </div>
             </div>
             <li class="nav-item">
-                <a class="nav-link text-gray" href="/cart">Giỏ hàng<span class="badge badge-info" id="cartCounter">{{cart_stats.total_quantity}}</span></a>
+                <a class="nav-link text-gray" href="/cart">Đặt phòng<span class="badge badge-info" id="cartCounter">{{cart_stats.total_quantity}}</span></a>
             </li>
             {% if current_user.is_authenticated or session.get('khach') %}
             <li class="nav-item">
@@ -29,9 +29,11 @@
             <li class="nav-item">
                 <a class="nav-link" href="danhgia">Đánh giá </a>
             </li>
+            {% if session.get('khach') %}
             <li class="nav-item">
-                <a class="nav-link text-danger">{{session.get('khach')['khach'].username}}</a>
+                <a class="nav-link text-danger" href="update">{{ session.get('khach')['khach'].username }}</a>
             </li>
+            {% endif %}
             <li class="nav-item">
                 <a class="nav-link" href="/dangxuat">Đăng xuất</a>
             </li>

@@ -9,6 +9,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.secret_key = "#@#$%%^%$#@#$$%^&**("
 app.config["PAGE_SIZE"] = 6
 pass_KS = "abc"
+
 db = SQLAlchemy(app=app)
 admin = Admin(app=app, name="Quan Ly Khach San", template_mode="bootstrap4")
 my_login = LoginManager(app=app)

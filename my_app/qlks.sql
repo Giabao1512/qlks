@@ -14,26 +14,6 @@
 
 
 --
--- Dumping data for table `bangsdt`
---
-
-LOCK TABLES `bangsdt` WRITE;
-/*!40000 ALTER TABLE `bangsdt` DISABLE KEYS */;
-INSERT INTO `bangsdt` VALUES (1,1),(1,2);
-/*!40000 ALTER TABLE `bangsdt` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Dumping data for table `bangsdtnhanvien`
---
-
-LOCK TABLES `bangsdtnhanvien` WRITE;
-/*!40000 ALTER TABLE `bangsdtnhanvien` DISABLE KEYS */;
-/*!40000 ALTER TABLE `bangsdtnhanvien` ENABLE KEYS */;
-UNLOCK TABLES;
-
-
---
 -- Dumping data for table `chi_tiet_thue`
 --
 
@@ -68,7 +48,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `khach` WRITE;
 /*!40000 ALTER TABLE `khach` DISABLE KEYS */;
-INSERT INTO `khach` VALUES (1,1,'1','1','2003-01-01 00:00:00');
+INSERT INTO `khach` VALUES (1,1,'1','1','2003-01-01 00:00:00', '012345');
 /*!40000 ALTER TABLE `khach` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -102,15 +82,6 @@ INSERT INTO `phong` VALUES (101,1,NULL,'IU',NULL),(102,1,NULL,'IU',NULL),(103,3,
 /*!40000 ALTER TABLE `phong` ENABLE KEYS */;
 UNLOCK TABLES;
 
---
--- Dumping data for table `sdt`
---
-
-LOCK TABLES `sdt` WRITE;
-/*!40000 ALTER TABLE `sdt` DISABLE KEYS */;
-INSERT INTO `sdt` VALUES (1,'Riêng','0823582541'),(2,'Công ty','0823658741');
-/*!40000 ALTER TABLE `sdt` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Dumping data for table `tai_khoan_admin`
@@ -148,7 +119,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `thong_so_quy_dinh` WRITE;
 /*!40000 ALTER TABLE `thong_so_quy_dinh` DISABLE KEYS */;
-INSERT INTO `thong_so_quy_dinh` VALUES (1, 3, 150, 3, 0.25, 1), (2,3,170,3,0.25,2), (3,3,200,3,0.25,3);
+INSERT INTO `thong_so_quy_dinh` VALUES (1, 3, 150, 3, 1.25, 1), (2,3,170,3,1.25,2), (3,3,200,3,1.25,3);
 /*!40000 ALTER TABLE `thong_so_quy_dinh` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

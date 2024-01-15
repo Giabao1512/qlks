@@ -21,7 +21,6 @@ def user_load(user_id):
 
 msg = ""
 err_msg = ""
-heso = 1.5
 tylephuthu = ThongSoQuyDinh.TyLePhuThu
 
 
@@ -130,12 +129,10 @@ def dangky():
                 diaChi = request.form["DiaChi"]
                 ngaySinh = request.form["NgaySinh"]
                 SDT = request.form["SDT"]
-                loaiSDT = request.form["LoaiSDT"]
-
                 if utils.exist_taiKhoan(username):
                     err_msg = "username và password đã tồn tại!! Vui lòng đổi username và password khác"
                 else:
-                    if utils.add_Khach(username, password, maLoaiKhach, CMND, diaChi, ngaySinh, SDT, loaiSDT):
+                    if utils.add_Khach(username, password, maLoaiKhach, CMND, diaChi, ngaySinh, SDT):
                         return redirect("/dangnhap")
                     else:
                         err_msg = "Dữ liệu đầu vào không hợp lệ!"
@@ -147,10 +144,53 @@ def dangky():
 
     return render_template("layout/dangky.html", err_msg=err_msg, loaiKhach=loaiKhach)
 
+
+@app.route("/update", methods=['get', 'post'])
+def update():
+    if session.get("khach"):
+        msg = ''
+    else:
+        msg = 'Bạn chưa đăng nhập!!!'
+    taiKhoanKhach = session.get("khach")
+    khach = utils.get_khach(taiKhoanKhach['khach']['id'])
+    loaiKhach = utils.get_LoaiKhach()
+
+    if request.method == 'POST':
+        if khach:
+            maKhach = session.get("khach")['khach']['id']
+            username = request.form["username"]
+            password = request.form["password"]
+            maLoaiKhach = request.form["LoaiKhach"]
+            CMND = request.form["CMND"]
+            diaChi = request.form["DiaChi"]
+            ngaySinh = request.form["NgaySinh"]
+            SDT = request.form["SDT"]
+
+            if username == session.get('khach')['khach']['username']:
+
+                if utils.update_Khach(maKhach, username, password, maLoaiKhach, CMND, diaChi, ngaySinh, SDT):
+                    session.pop('khach', None)
+                    return redirect("/dangnhap")
+                msg = 'Cập nhật thất bại! Vui lòng kiểm tra lại thông tin!!!'
+                return render_template("layout/update_user.html", msg=msg, khach=khach, loaiKhach=loaiKhach)
+            else:
+                if utils.exist_taiKhoan(username):
+                    msg = "Username đã tồn tại!!! Vui lòng đổi Username khác"
+                    return render_template("layout/update_user.html", msg=msg, khach=khach, loaiKhach=loaiKhach)
+                else:
+                    if utils.update_Khach(maKhach, username, password, maLoaiKhach, CMND, diaChi, ngaySinh, SDT):
+                        session.pop('khach', None)
+                        return redirect("/dangnhap")
+                    msg = 'Cập nhật thất bại! Vui lòng kiểm tra lại thông tin!!!'
+                    return render_template("layout/update_user.html", msg=msg, khach=khach, loaiKhach=loaiKhach)
+
+    return render_template("layout/update_user.html", msg=msg, khach=khach, loaiKhach=loaiKhach)
+
+
 @app.route("/dangxuat")
 def logout():
     logout_user()
-    del session['khach']
+    session.pop('khach', None)
     return redirect('/')
 
 @app.route("/traphongtt")
@@ -278,6 +318,8 @@ def update_cart_item():
             ngayBatDau = data['NgayBatDau']
             print(ngayBatDau)
             quantity = data['quantity']
+            SoLuongKhach = data['SoLuongKhach']
+            print(SoLuongKhach)
         except Union[IndexError, KeyError] as ex:
             print(ex)
         else:
@@ -286,7 +328,7 @@ def update_cart_item():
                     p = cart[maPhong]
                     p['quantity'] = quantity
                     p['NgayBatDau'] = ngayBatDau
-
+                    p['SoLuongKhach'] = SoLuongKhach
                     session["cart"] = cart
 
                     return jsonify({
@@ -337,7 +379,8 @@ def add_to_cart():
             "LoaiPhong": loaiPhong.LoaiPhong,
             "DonGia": loaiPhong.DonGia,
             "NgayBatDau": str(datetime.date.today()),
-            "quantity": 1
+            "quantity": 1,
+            "SoLuongKhach": 1
         }
 
     session["cart"] = cart
@@ -437,7 +480,7 @@ def hoadon():
     if not hopdong:
         return render_template("layout/thongbaohoadon.html")
     else:
-        return render_template("layout/LapHoaDon.html", phong=phong, mahopdong=mahopdongSQL, hopdong=hopdong, heso=heso,
+        return render_template("layout/LapHoaDon.html", phong=phong, mahopdong=mahopdongSQL, hopdong=hopdong, heso=tylephuthu,
                                thongbao=thongbao)
 
 

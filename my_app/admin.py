@@ -22,7 +22,7 @@ class logoutView(BaseView):
     @expose("/")
     def index(self):
         logout_user()
-        del session['khach']
+        session.pop('khach', None)
         return redirect("/")
 
     def is_accessible(self):

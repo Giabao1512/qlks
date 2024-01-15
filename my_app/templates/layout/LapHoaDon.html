@@ -39,6 +39,7 @@
                 <th class="text-center text-danger">Phòng</th>
                 <th class="text-center text-danger">Số ngày ở</th>
                 <th class="text-center text-danger">Đơn giá</th>
+                <th class="text-center text-danger">Số người ở</th>
                 <th class="text-center text-danger">Thành tiền</th>
             </tr>
             {%for i in hopdong %}
@@ -49,8 +50,17 @@
                 <td class="text-center">{{i[3]}}</td>
                 <td class="text-center">{{i[4]}}</td>
                 <td class="text-center">{{i[5]}}</td>
-                <td class="text-center" name="thanhtien" id="thanhtien">{%if i[0]==2 %} {{i[5]*i[4]*heso}} {%else%}
-                    {{i[5]*i[4]}} {%endif%}
+                <td class="text-center">{{i[6]}}</td>
+                <td class="text-center" name="thanhtien" id="thanhtien">
+                    {%if i[0]==2 %}
+                    {{i[5]*i[4]*heso}}
+                    {%else%}
+                    {% if i[6] > 2 %}
+                    {{i[5]*i[4]*heso}}
+                    {% else %}
+                    {{i[5]*i[4]}}
+                    {% endif %}
+                    {%endif%}
                 </td>
             </tr>
             {%endfor%}
@@ -62,7 +72,15 @@
         <input type="text" name="mahopdong" value="{{hopdong[-1][2]}}"/>
         <label class="input-title">Giá Tiền Cần Thanh Toán:</label>
         <input type="text" name="thanhtien"
-               value="{%if hopdong[-1][0]==2 %} {{hopdong[-1][5]*hopdong[-1][4]*heso}} {%else%} {{hopdong[-1][5]*hopdong[-1][4]}} {%endif%}"/>
+               value="{% if hopdong[-1][0] == 2 %}
+             {{ hopdong[-1][5] * hopdong[-1][4] * heso }}
+           {% else %}
+             {% if hopdong[-1][6] > 2 %}
+               {{ hopdong[-1][5] * hopdong[-1][4] * heso }}
+             {% else %}
+               {{ hopdong[-1][5] * hopdong[-1][4] }}
+             {% endif %}
+           {% endif %}"/>
         <input type="submit" value="Thanh toán" class="btn btn-warning"/>
     </form>
 </div>

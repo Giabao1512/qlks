@@ -13,6 +13,7 @@
         <th>Đơn giá</th>
         <th>Ngày bắt đầu</th>
         <th>Số ngày ở dự kiến</th>
+        <th>Số lượng khách</th>
         <th></th>
     </tr>
     {% if not session.get('cart') %}
@@ -28,12 +29,18 @@
         <td>
             <input type="date"
                    value="{{item.NgayBatDau}}"
-                   onchange="updateCartItem({{item.MaPhong}}, this.value, {{item.quantity}})"/>
+                   onchange="updateCartItem({{item.MaPhong}}, this.value, {{item.quantity}}, {{item.SoLuongKhach}})"/>
         </td>
         <td>
             <input type="number"
                    value="{{item.quantity}}"
-                   onchange="updateCartItem({{item.MaPhong}}, '{{item.NgayBatDau}}', this.value)"
+                   onchange="updateCartItem({{item.MaPhong}}, '{{item.NgayBatDau}}', this.value), {{item.SoLuongKhach}}"
+                   class="form-control" min="1"/>
+        </td>
+        <td>
+            <input type="number"
+                   value="{{item.SoLuongKhach}}"
+                   onchange="updateCartItem({{item.MaPhong}}, '{{item.NgayBatDau}}', {{item.quantity}}, this.value)"
                    class="form-control" min="1"/>
         </td>
         <td>
