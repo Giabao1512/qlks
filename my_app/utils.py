@@ -83,8 +83,16 @@ def getAllRoomByUserID():
         Phong, Phong.MaPhong == ChiTietThue.MaPhong).join(LoaiPhong, Phong.MaLoaiPhong == LoaiPhong.MaLoaiPhong).all()
 
 
-def price(NgayBatDau, DonGia):
-    price1room = (datetime.datetime.now() - NgayBatDau).days * int(DonGia) * 1000
+def price(NgayBatDau, DonGia, SoLuongKhach):
+    phuthu = 0
+    loaiKhach = Khach.query.join(LoaiKhach).filter(Khach.MaKhach == session.get('khach')['khach']['id']).all()
+    TyLe = ThongSoQuyDinh.query.filter(ThongSoQuyDinh.id == 1).value(ThongSoQuyDinh.TyLePhuThu)
+    if loaiKhach:
+        if loaiKhach[0].LoaiKhach.LoaiKhach == 'NuocNgoai':
+            phuthu = phuthu + DonGia * TyLe
+    if SoLuongKhach > 2:
+        phuthu = phuthu + DonGia * TyLe
+    price1room = ((datetime.datetime.now() - NgayBatDau).days * int(DonGia) * 1000) + (phuthu * 1000)
     return price1room
 
 
@@ -216,16 +224,17 @@ def add_HoaDon_ChiTietThue(cart):
                     days=soNgayODuKien)
 
                 thanhTien = 0
+                phuthu = 0
 
                 loaiKhach = Khach.query.join(LoaiKhach).filter(
                     Khach.MaKhach == session.get('khach')['khach']['id']).all()
+                TyLe = ThongSoQuyDinh.query.filter(ThongSoQuyDinh.id == 1).value(ThongSoQuyDinh.TyLePhuThu)
                 if loaiKhach:
                     if loaiKhach[0].LoaiKhach.LoaiKhach == 'NuocNgoai':
-                        thanhTien += p["DonGia"] * p["quantity"] * ThongSoQuyDinh.TyLePhuThu
-                    else:
-                        thanhTien += p["DonGia"] * p["quantity"]
-                if SoLuongKhach > 3:
-                    thanhTien += p["DonGia"] * p["quantity"] * ThongSoQuyDinh.TyLePhuThu
+                        phuthu = p["DonGia"] * TyLe
+                if p['SoLuongKhach'] is not None and p['SoLuongKhach'] > 2:
+                    phuthu = p["DonGia"] * TyLe
+                thanhTien = ((thanhTien + (p["DonGia"] * p["quantity"])) / 3) + phuthu
 
                 hoaDon = HoaDon(ChiTietThue=chiTietThue, NgayTraPhong=ngayTraPhong, ThanhTien=thanhTien)
                 db.session.add(hoaDon)
@@ -256,6 +265,7 @@ def count_Phong(MaLoaiPhong=None, TinhTrang=None, kw=None):
 
 def cart_stats(cart):
     total_quantity, total_amount = 0, 0
+    phuthu = 0
 
     if cart:
         for p in cart.values():
@@ -264,20 +274,18 @@ def cart_stats(cart):
                 TyLe = ThongSoQuyDinh.query.filter(ThongSoQuyDinh.id == 1).value(ThongSoQuyDinh.TyLePhuThu)
                 if loaiKhach:
                     if loaiKhach[0].LoaiKhach.LoaiKhach == 'NuocNgoai':
-                        total_amount = total_amount + (p["DonGia"] * p["quantity"] * TyLe)
-                    else:
-                        total_amount = total_amount + (p["DonGia"] * p["quantity"])
+                        phuthu = phuthu + p["DonGia"] * TyLe
 
                 if p['SoLuongKhach'] is not None and p['SoLuongKhach'] > 2:
-                    total_amount += p["DonGia"] * p["quantity"] * TyLe
-            else:
-                total_amount = total_amount + (p["DonGia"] * p["quantity"])
+                    phuthu = phuthu + p["DonGia"] * TyLe
+
+                total_amount = ((total_amount + (p["DonGia"] * p["quantity"])) / 3) + phuthu
 
             total_quantity = total_quantity + 1
 
     return {
         "total_quantity": total_quantity,
-        "total_amount": total_amount / 3
+            "total_amount": total_amount
     }
 
 
@@ -342,5 +350,8 @@ if __name__ == '__main__':
         new_row = list(row)
         new_row.append(soNgayO(row[0].NgayBatDau))
         new_row.append(price(row[0].NgayBatDau, row[2].DonGia))
+        new_row.append(row[0].SoLuongKhach)
         new_list.append(tuple(new_row))
+    for row in rooms:
+        print(row)
     #     print(row[0].MaHopDong)

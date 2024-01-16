@@ -201,9 +201,12 @@ def traPhongTrucTuyen():
         for row in rooms:
             new_row = list(row)
             new_row.append(soNgayO(row[0].NgayBatDau))
-            new_row.append(price(row[0].NgayBatDau, row[2].DonGia))
+            new_row.append(price(row[0].NgayBatDau, row[2].DonGia, row[0].SoLuongKhach))
+            new_row.append(row[0].SoLuongKhach)
             new_list.append(tuple(new_row))
         priceAllRooms = totalPrice(new_list)
+        for row in rooms:
+            print(new_row)
         return render_template("layout/traphong.html", rooms=new_list, priceAllRooms=priceAllRooms)
     else:
         global msg
@@ -263,6 +266,7 @@ def getLink():
         new_row = list(row)
         new_row.append(soNgayO(row[0].NgayBatDau))
         new_row.append(price(row[0].NgayBatDau, row[2].DonGia))
+        new_row.append(row[0].SoLuongKhach)
         new_list.append(tuple(new_row))
     priceAllRooms = totalPrice(new_list)
     amount = str(priceAllRooms)
